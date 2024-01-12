@@ -1,0 +1,120 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.io Example</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+
+  <script src="./jsmpeg.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+</head>
+
+<body>
+  <h1>Socket.io Example</h1>
+  <input type="text" id="messageInput" placeholder="Type a message">
+  <button onclick="sendMessage()">Send</button>
+
+  <ul id="messages"></ul>
+  <video controls width="640" height="360" id="videoPlayer"></video>
+
+  <canvas id="canvas"></canvas>
+
+
+</body>
+<script>
+  // player = new JSMpeg.Player('ws://192.168.106.90:3000', {
+  //   canvas: document.getElementById('canvas') // Canvas should be a canvas DOM element
+  // })
+  // const video = document.querySelector("video");
+
+  // const assetURL = "frag_bunny.mp4";
+  // // Need to be specific for Blink regarding codecs
+  // // ./mp4info frag_bunny.mp4 | grep Codec
+  // const mimeCodec = 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"';
+  // let mediaSource;
+
+  // if ("MediaSource" in window && MediaSource.isTypeSupported(mimeCodec)) {
+  //   mediaSource = new MediaSource;
+  //   console.log(mediaSource.readyState); // closed
+  //   video.src = URL.createObjectURL(mediaSource);
+  //   mediaSource.addEventListener("sourceopen", sourceOpen);
+  // } else {
+  //   console.error("Unsupported MIME type or codec: ", mimeCodec);
+  // }
+
+  // function sourceOpen(_) {
+  //   //console.log(this.readyState); // open
+  //   var mediaSource = this;
+  //   var sourceBuffer = mediaSource.addSourceBuffer('video/mp4;codecs="avc1.4d001e,mp4a.40.2"');
+
+  //   socket.on('video', (buf) => {
+  //     sourceBuffer.addEventListener('updateend', function (_) {
+  //       mediaSource.endOfStream();
+  //       video.play();
+  //       //console.log(mediaSource.readyState); // ended
+  //     });
+  //     sourceBuffer.appendBuffer(buf);
+  //   });
+
+
+  // };
+
+
+
+
+
+
+
+
+
+
+
+
+  var socket = io.connect(':3000');
+  function sendMessage() {
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value;
+
+    // Emit the message to the server
+    socket.emit('message', message);
+
+    // Clear the input field
+    messageInput.value = '';
+  }
+  // const sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
+
+
+
+  const mediaSource = new MediaSource();
+
+  // Reference to the video element
+  const videoElement = document.getElementById('videoPlayer');
+
+  // Listen for the sourceopen event to append the ArrayBuffer data
+  mediaSource.addEventListener('sourceopen', handleSourceOpen);
+
+  // Set the MediaSource as the source of the video element
+  videoElement.src = URL.createObjectURL(mediaSource);
+
+  // Function to handle the sourceopen event
+  function handleSourceOpen() {
+    // Create a new SourceBuffer
+    const sourceBuffer = mediaSource.addSourceBuffer('video/mp4'); // Change the MIME type based on your content
+
+    // Append the ArrayBuffer data to the SourceBuffer
+    socket.on('video', (message) => {
+      console.log(message);
+      sourceBuffer.appendBuffer(message);
+    });
+
+  }
+
+
+  // Listen for messages from the server
+
+</script>
+
+</html>

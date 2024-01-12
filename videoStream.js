@@ -9,8 +9,12 @@ events = require('events')
 Mpeg1Muxer = require('./mpeg1muxer')
 
 STREAM_MAGIC_BYTES = "jsmp" // Must be 4 bytes
+const { io } = require("socket.io-client");
 
-VideoStream = function(options) {
+
+const socket = io("");
+
+VideoStream = function (options) {
   this.options = options
   this.name = options.name
   this.streamUrl = options.streamUrl
@@ -20,20 +24,20 @@ VideoStream = function(options) {
   this.inputStreamStarted = false
   this.stream = undefined
   this.startMpeg1Stream()
-  this.pipeStreamToSocketServer()
+  // this.pipeStreamToSocketServer()
   return this
 }
 
 util.inherits(VideoStream, events.EventEmitter)
 
-VideoStream.prototype.stop = function() {
+VideoStream.prototype.stop = function () {
   this.wsServer.close()
   this.stream.kill()
   this.inputStreamStarted = false
   return this
 }
 
-VideoStream.prototype.startMpeg1Stream = function() {
+VideoStream.prototype.startMpeg1Stream = function () {
   var gettingInputData, gettingOutputData, inputData, outputData
   this.mpeg1Muxer = new Mpeg1Muxer({
     ffmpegOptions: this.options.ffmpegOptions,
@@ -45,7 +49,8 @@ VideoStream.prototype.startMpeg1Stream = function() {
     return
   }
   this.mpeg1Muxer.on('mpeg1data', (data) => {
-    return this.emit('camdata', data)
+    socket.emit('createMessage', data);
+    // return this.emit('camdata', data)
   })
   gettingInputData = false
   inputData = []
@@ -78,7 +83,7 @@ VideoStream.prototype.startMpeg1Stream = function() {
       }
     }
   })
-  this.mpeg1Muxer.on('ffmpegStderr', function(data) {
+  this.mpeg1Muxer.on('ffmpegStderr', function (data) {
     return global.process.stderr.write(data)
   })
   this.mpeg1Muxer.on('exitWithError', () => {
@@ -87,14 +92,14 @@ VideoStream.prototype.startMpeg1Stream = function() {
   return this
 }
 
-VideoStream.prototype.pipeStreamToSocketServer = function() {
+VideoStream.prototype.pipeStreamToSocketServer = function () {
   this.wsServer = new ws.Server({
     port: this.wsPort
   })
   this.wsServer.on("connection", (socket, request) => {
     return this.onSocketConnect(socket, request)
   })
-  this.wsServer.broadcast = function(data, opts) {
+  this.wsServer.broadcast = function (data, opts) {
     var results
     results = []
     for (let client of this.clients) {
@@ -106,12 +111,17 @@ VideoStream.prototype.pipeStreamToSocketServer = function() {
     }
     return results
   }
+
+
+
+
   return this.on('camdata', (data) => {
+    socket.emit('createMessage', data);
     return this.wsServer.broadcast(data)
   })
 }
 
-VideoStream.prototype.onSocketConnect = function(socket, request) {
+VideoStream.prototype.onSocketConnect = function (socket, request) {
   var streamHeader
   // Send magic bytes and video size to the newly connected socket
   // struct { char magic[4]; unsigned short width, height;}
