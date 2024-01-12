@@ -7,7 +7,9 @@ let server = http.createServer(app);
 var io = socketIO(server);
 const cors = require('cors');
 var path = require('path');
-
+let wsServer;
+STREAM_MAGIC_BYTES = "jsmp"
+const ws = require('ws')
 app.use("/public", express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '');
@@ -21,7 +23,9 @@ io.on('connection', (socket) => {
     // listen for message from user
     socket.on('createMessage', (newMessage) => {
         console.log('newMessage', newMessage);
-        io.emit("video", newMessage);
+        // io.emit("video", newMessage);
+
+        wsServer.broadcast(newMessage)
         // io.emit(/* ... */);
     });
 
@@ -35,6 +39,54 @@ io.on('connection', (socket) => {
 //     res.sendFile(__dirname + "/client-side.html");
 // });
 
+
+let pipeStreamToSocketServer = function () {
+    wsServer = new ws.Server({
+        port: 12000
+    })
+    wsServer.on("connection", (socket, request) => {
+        return onSocketConnect(socket, request)
+    })
+    wsServer.broadcast = function (data, opts) {
+        var results
+        results = []
+        for (let client of this.clients) {
+            if (client.readyState === 1) {
+                results.push(client.send(data, opts))
+            } else {
+                results.push(console.log("Error: Client from remoteAddress " + client.remoteAddress + " not connected."))
+            }
+        }
+        return results
+    }
+
+    // return this.on('camdata', (data) => {
+    //     return wsServer.broadcast(data)
+    // })
+}
+
+
+let onSocketConnect = function (socket, request) {
+    var streamHeader
+    // Send magic bytes and video size to the newly connected socket
+    // struct { char magic[4]; unsigned short width, height;}
+    streamHeader = new Buffer(8)
+    streamHeader.write(STREAM_MAGIC_BYTES)
+    streamHeader.writeUInt16BE(this.width, 4)
+    streamHeader.writeUInt16BE(this.height, 6)
+    socket.send(streamHeader, {
+        binary: true
+    })
+    // console.log(`${this.name}: New WebSocket Connection (` + this.wsServer.clients.size + " total)")
+
+    socket.remoteAddress = request.connection.remoteAddress
+
+    return socket.on("close", (code, message) => {
+        // return console.log(`${this.name}: Disconnected WebSocket (` + this.wsServer.clients.size + " total)")
+    })
+}
+
+pipeStreamToSocketServer();
 
 server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

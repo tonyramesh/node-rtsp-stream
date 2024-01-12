@@ -12,7 +12,7 @@ STREAM_MAGIC_BYTES = "jsmp" // Must be 4 bytes
 const { io } = require("socket.io-client");
 
 
-const socket = io("");
+const socket = io("http://localhost:3000");
 
 VideoStream = function (options) {
   this.options = options
@@ -112,11 +112,7 @@ VideoStream.prototype.pipeStreamToSocketServer = function () {
     return results
   }
 
-
-
-
   return this.on('camdata', (data) => {
-    socket.emit('createMessage', data);
     return this.wsServer.broadcast(data)
   })
 }
