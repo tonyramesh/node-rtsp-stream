@@ -73,7 +73,7 @@
 
 
 
-  var socket = io.connect(':3000');
+  var socket = io.connect(':35500');
   function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const message = messageInput.value;
@@ -107,7 +107,8 @@
     // Append the ArrayBuffer data to the SourceBuffer
     socket.on('video', (message) => {
       console.log(message);
-      sourceBuffer.appendBuffer(message);
+
+      // sourceBuffer.appendBuffer(message);
     });
 
   }

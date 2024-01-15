@@ -1,7 +1,7 @@
 const express = require('express');
 const socketIO = require('socket.io');
 const http = require('http')
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 35500
 var app = express();
 let server = http.createServer(app);
 var io = socketIO(server);
@@ -15,6 +15,14 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '');
 });
 
+const filePath = './file.mp4';
+const fs = require('fs');
+
+// Create a writable stream to save the video data
+const fileStream = fs.createWriteStream(filePath);
+fileStream.on('finish', () => {
+    console.log('Video file saved successfully!');
+});
 // make connection with user from server side
 io.on('connection', (socket) => {
     console.log('New user connected');
@@ -22,7 +30,9 @@ io.on('connection', (socket) => {
 
     // listen for message from user
     socket.on('createMessage', (newMessage) => {
-        console.log('newMessage', newMessage);
+        // console.log('newMessage', newMessage);
+
+        // fileStream.write(newMessage);
         // io.emit("video", newMessage);
 
         wsServer.broadcast(newMessage)
@@ -31,6 +41,7 @@ io.on('connection', (socket) => {
 
     // when server disconnects from user
     socket.on('disconnect', () => {
+        fileStream.close();
         console.log('disconnected from user');
     });
 });
@@ -44,9 +55,9 @@ let pipeStreamToSocketServer = function () {
     wsServer = new ws.Server({
         port: 12000
     })
-    wsServer.on("connection", (socket, request) => {
-        return onSocketConnect(socket, request)
-    })
+    // wsServer.on("connection", (socket, request) => {
+    //     return onSocketConnect(socket, request)
+    // })
     wsServer.broadcast = function (data, opts) {
         var results
         results = []
@@ -88,6 +99,7 @@ let onSocketConnect = function (socket, request) {
 
 pipeStreamToSocketServer();
 
-server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
-});
+
+server.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${port}`);
+})

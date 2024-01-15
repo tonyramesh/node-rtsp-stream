@@ -12,7 +12,8 @@ STREAM_MAGIC_BYTES = "jsmp" // Must be 4 bytes
 const { io } = require("socket.io-client");
 
 
-const socket = io("http://localhost:3000");
+// const socket = io("http://13.126.8.33:35500");
+const socket = io("http://localhost:35500");
 
 VideoStream = function (options) {
   this.options = options

@@ -3,7 +3,7 @@ Stream = require('./index');
 stream = new Stream({
     name: 'name',
     // streamUrl: 'rtsp://admin:Think%123@192.168.0.250:554',
-    streamUrl: '',
+    streamUrl: 'rtsp://admin:Think_123@192.168.0.250:554',
 
     // streamUrl: 'rtsp://192.168.0.250:554',
     wsPort: 9999,

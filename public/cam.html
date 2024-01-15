@@ -1,0 +1,14 @@
+<html>
+
+<body>
+	<canvas id="canvas"></canvas>
+</body>
+
+<script src="./jsmpeg.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script type="text/javascript">
+	player = new JSMpeg.Player('ws://192.168.106.90:12000', {
+		canvas: document.getElementById('canvas') // Canvas should be a canvas DOM element
+	})	
+</script>
+
+</html>

@@ -6,7 +6,7 @@ util = require('util')
 
 events = require('events')
 
-Mpeg1Muxer = function(options) {
+Mpeg1Muxer = function (options) {
   var key
   this.url = options.url
   this.ffmpegOptions = options.ffmpegOptions
@@ -33,6 +33,8 @@ Mpeg1Muxer = function(options) {
     ...this.additionalFlags,
     '-'
   ]
+
+  console.log(options.ffmpegPath, this.spawnOptions);
   this.stream = child_process.spawn(options.ffmpegPath, this.spawnOptions, {
     detached: false
   })
