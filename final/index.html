@@ -1,0 +1,39 @@
+<!doctype html>
+<!--www.shinobi.video-->
+<html lang="en-US">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
+    <title>FLV to Web Test by Shinobi Systems</title>
+    <!--FLV Live Player-->
+    <script src="http://cdn.shinobi.video/js/flv.min.js"></script>
+</head>
+
+<body>
+    <video id="videoElement" controls autoplay></video>
+    <script>
+        play();
+
+        async function play() {
+            if (flvjs.isSupported()) {
+                var videoElement = document.getElementById('videoElement');
+                var flvPlayer = flvjs.createPlayer({
+                    type: 'flv',
+                    isLive: true,
+                    url: '/flv/1/s.flv'
+                });
+                flvPlayer.attachMediaElement(videoElement);
+                flvPlayer.on('error', function (err) {
+                    console.log(err)
+                });
+                flvPlayer.on('media_info', function (err) {
+                    setTimeout(() => {
+                        flvPlayer.play();
+                    }, 1000);
+                });
+                flvPlayer.load();
+            }
+        }
+    </script>
+</body>
